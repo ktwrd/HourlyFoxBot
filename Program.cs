@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 /*
  *   Copyright 2024 Kate Ward <kate@dariox.club>
@@ -45,33 +46,66 @@ namespace HourlyFoxBot
                 string str1 = await Boilerplate("fox");
                 if (str1 != null)
                 {
-                    var embedDict = new Dictionary<string, object>()
+                    var msgData = new DiscordMessage()
                     {
-                        {"color", 5814783},
-                        { "footer", new Dictionary<string, object>()
+                        Content = "",
+                        Username = "HourlyFox",
+                        AvatarUrl = "https://res.kate.pet/upload/e9fffe52-ebc4-4f44-bff0-927846126ba4/ezgif-5-141677e75c.jpg",
+                        Embeds = new[]
                         {
-                            {"text", $"made by @kate.pet"}
-                        }},
-                        {
-                            "image", new Dictionary<string, object>()
+                            new DiscordEmbed()
                             {
-                                {"url", str1}
+                                Color = 5814783,
+                                Footer = new DiscordEmbed.DiscordEmbedFooter()
+                                {
+                                    Text = "made by @kate.pet"
+                                },
+                                Image = new DiscordEmbed.DiscordEmbedImage()
+                                {
+                                    Url = str1
+                                }
                             }
                         }
                     };
-                    var msgDict = new Dictionary<string, object>()
-                    {
-                        {"username", "HourlyFox"},
-                        {"avatar_url", "https://res.kate.pet/upload/e9fffe52-ebc4-4f44-bff0-927846126ba4/ezgif-5-141677e75c.jpg"},
-                        {"content", null},
-                        {"embeds", new object[] {embedDict}},
-                        {"attachments", Array.Empty<object>()}
-                    };
-                    string str2 = JsonSerializer.Serialize(msgDict, SerializerOptions);
+                    string str2 = JsonSerializer.Serialize(msgData, SerializerOptions);
                     HttpResponseMessage httpResponseMessage = await this.HttpClient.PostAsync(webhookUrl, new StringContent(str2, null, "application/json"));
                     string result = httpResponseMessage.Content.ReadAsStringAsync().Result;
                     Console.WriteLine(httpResponseMessage.StatusCode.ToString() + "\n\n" + result);
                 }
+            }
+        }
+
+        public class DiscordMessage
+        {
+            [JsonPropertyName("username")]
+            public string? Username { get; set; }
+            [JsonPropertyName("avatar_url")]
+            public string? AvatarUrl { get; set; }
+            [JsonPropertyName("content")]
+            public string Content { get; set; }
+            [JsonPropertyName("embeds")]
+            public DiscordEmbed[]? Embeds { get; set; }
+        }
+
+        public class DiscordEmbed
+        {
+            [JsonPropertyName("color")]
+            public int Color { get; set; }
+            [JsonPropertyName("footer")]
+            public DiscordEmbedFooter Footer { get; set; }
+            [JsonPropertyName("image")]
+            public DiscordEmbedImage Image { get; set; }
+
+            public class DiscordEmbedFooter
+            {
+                [JsonPropertyName("text")]
+                public string Text { get; set; }
+            }
+
+            public class DiscordEmbedImage
+            {
+                [JsonPropertyName("url")]
+                public string Url { get; set; }
             }
         }
 
